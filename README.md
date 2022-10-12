@@ -19,3 +19,4 @@
 - [ ] Compress or encrypt exported board
 - [ ] Save imported board to localstorage so players don't lose progress
 - [ ] Check if the board is solved
+- [ ] Support smaller screens
