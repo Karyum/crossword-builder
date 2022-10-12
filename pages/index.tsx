@@ -331,6 +331,10 @@ const Home: NextPage = () => {
                         onChange={(e) => {
                           const letter = e.target.value.slice(-1)
 
+                          if (!letter.match(/[a-z]/i)) {
+                            return
+                          }
+
                           addLetterToBoard(letter, rowIndex, squareIndex)
                         }}
                         onDoubleClick={() => {
