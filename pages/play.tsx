@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
-import { Col, Row, Input, InputNumber, Typography, Form, Divider, Space, Checkbox, Button } from 'antd'
-import { useEffect, useState } from 'react'
+import { Col, Row, Input, Typography, Space, Button } from 'antd'
+import { useCallback, useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
 import LZUTF8 from 'lzutf8'
 
@@ -37,7 +37,7 @@ interface IConnectedWord {
   cells: number[][] | null
 }
 
-const Home: NextPage = () => {
+const Play: NextPage = () => {
   const [board, setBoard] = useState<ISquare[][]>([])
   const [connectedWords, setConnectedWords] = useState<IConnectedWord[]>([])
   const [boardSize, setBoardSize] = useState<number>(15)
@@ -115,27 +115,21 @@ const Home: NextPage = () => {
     const newBoard = [...board]
 
     newBoard[row][col].value = letter
+    console.log({ letter })
 
     setBoard(newBoard)
 
     focusSquare(row, col)
   }
 
-  const turnCellBlack = (row: number, col: number) => {
-    const newBoard = [...board]
-
-    if (newBoard[row][col].type === SquareType.White) {
-      newBoard[row][col].type = SquareType.Black
-    } else {
-      newBoard[row][col].type = SquareType.White
-    }
-
-    setBoard(newBoard)
-  }
-
   const getCellBackgroundColor = (row: number, col: number) => {
     // currentCell[0] === rowIndex && currentCell[1] === squareIndex ? 'khaki' : 'white'
     const anchorCell = currentCell
+
+    if (anchorCell.length === 0) {
+      return 'white'
+    }
+
     const showConnectedWords = connectedWords.some(
       (word) => word.cellNumber === board[anchorCell[0]][anchorCell[1]].cellNumber && word.dimension === dimension
     )
@@ -176,35 +170,6 @@ const Home: NextPage = () => {
         return 'rgb(30, 144, 255, 0.5)'
       }
     }
-  }
-
-  const addClueToWord = (clue: string) => {
-    const newBoard = [...board]
-    const [row, col] = currentCell
-
-    if (dimension === Dimension.Row) {
-      newBoard[row][col].clue.row = clue
-
-      for (let i = col + 1; i < boardSize; i++) {
-        if (newBoard[row][i].type === SquareType.Black) {
-          break
-        }
-
-        newBoard[row][i].clue.row = clue
-      }
-    } else {
-      newBoard[row][col].clue.column = clue
-
-      for (let i = row + 1; i < boardSize; i++) {
-        if (newBoard[i][col].type === SquareType.Black) {
-          break
-        }
-
-        newBoard[i][col].clue.column = clue
-      }
-    }
-
-    setBoard(newBoard)
   }
 
   // if back space is pressed, delete the letter and move to the previous cell
@@ -291,21 +256,7 @@ const Home: NextPage = () => {
 
   return (
     <div className={styles.container}>
-      <Title>Crossword Builder</Title>
-      {/* <Row>
-        <Col span={6}>
-          <Form.Item label="Board size">
-            <InputNumber
-              min={1}
-              max={20}
-              value={boardSize}
-              onChange={(value) => {
-                setBoardSize(value || 1)
-              }}
-            />
-          </Form.Item>
-        </Col>
-      </Row> */}
+      <Title>Crossword!</Title>
 
       <Row>
         <Col offset={4}>
@@ -329,24 +280,22 @@ const Home: NextPage = () => {
                         id={`${rowIndex}-${squareIndex}`}
                         value={square.value?.toUpperCase()}
                         onChange={(e) => {
+                          console.log({ a: e.target.value })
                           const letter = e.target.value.slice(-1)
+                          console.log({ b: letter })
+
+                          if (!letter.match(/[a-z]/i)) {
+                            return
+                          }
 
                           addLetterToBoard(letter, rowIndex, squareIndex)
-                        }}
-                        onDoubleClick={() => {
-                          turnCellBlack(rowIndex, squareIndex)
                         }}
                         style={{
                           backgroundColor: getCellBackgroundColor(rowIndex, squareIndex)
                         }}
                       />
                     ) : (
-                      <div
-                        onDoubleClick={() => {
-                          turnCellBlack(rowIndex, squareIndex)
-                        }}
-                        className={styles.blackCell}
-                      />
+                      <div className={styles.blackCell} />
                     )}
                   </div>
                 ))}
@@ -354,55 +303,6 @@ const Home: NextPage = () => {
             ))}
           </div>
         </Col>
-
-        {!!currentCell.length && (
-          <Col offset={1}>
-            <Space direction="vertical">
-              <Form layout="vertical">
-                <Form.Item label="Cell number">
-                  <InputNumber
-                    className={styles.controlInput}
-                    value={currentCell.length ? board[currentCell[0]][currentCell[1]].cellNumber : null}
-                    onChange={(value) => {
-                      const newBoard = [...board]
-
-                      if (currentCell.length) {
-                        newBoard[currentCell[0]][currentCell[1]].cellNumber = value || null
-
-                        setBoard(newBoard)
-                      }
-                    }}
-                  />
-                </Form.Item>
-                <Form.Item label="Clue">
-                  <Input.TextArea
-                    onChange={(e) => {
-                      addClueToWord(e.target.value)
-                    }}
-                    value={board[currentCell[0]][currentCell[1]].clue[dimension] || ''}
-                  />
-                </Form.Item>
-                <Button
-                  onClick={() => {
-                    // export the board and connected words
-                    // remove letters from the board
-                    setExportData(
-                      JSON.stringify({
-                        board: board,
-                        connectedWords
-                      })
-                    )
-                  }}
-                >
-                  Export
-                </Button>
-                {/* <Form.Item label="Connected words">
-                  <Input />
-                </Form.Item> */}
-              </Form>
-            </Space>
-          </Col>
-        )}
 
         <Col offset={1}>
           <Space direction="vertical">
@@ -430,36 +330,6 @@ const Home: NextPage = () => {
               }, [])
               .map(({ clue, cellNumber }: any, index: number) => (
                 <div key={index}>
-                  <Checkbox
-                    style={{ marginRight: '10px' }}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        let cells: number[][] = []
-
-                        board.forEach((row, rowIndex) => {
-                          row.forEach((square, colIndex) => {
-                            if (square.clue.column === clue) {
-                              cells.push([rowIndex, colIndex])
-                            }
-                          })
-                        })
-
-                        setConnectedWords(
-                          connectedWords.concat({
-                            cellNumber: cellNumber,
-                            dimension: Dimension.Column,
-                            cells
-                          })
-                        )
-                      } else {
-                        setConnectedWords(
-                          connectedWords.filter(
-                            (word) => word.cellNumber !== cellNumber && word.dimension !== Dimension.Column
-                          )
-                        )
-                      }
-                    }}
-                  />
                   <span style={{ marginRight: '10px' }}>{cellNumber}.</span>
                   <span>{clue}</span>
                 </div>
@@ -493,36 +363,6 @@ const Home: NextPage = () => {
               }, [])
               .map(({ clue, cellNumber }: any, index: number) => (
                 <div key={index}>
-                  <Checkbox
-                    style={{ marginRight: '10px' }}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        let cells: number[][] = []
-
-                        board.forEach((row, rowIndex) => {
-                          row.forEach((square, colIndex) => {
-                            if (square.clue.row === clue) {
-                              cells.push([rowIndex, colIndex])
-                            }
-                          })
-                        })
-
-                        setConnectedWords(
-                          connectedWords.concat({
-                            cellNumber: cellNumber,
-                            dimension: Dimension.Row,
-                            cells
-                          })
-                        )
-                      } else {
-                        setConnectedWords(
-                          connectedWords.filter(
-                            (word) => word.cellNumber !== cellNumber && word.dimension !== Dimension.Row
-                          )
-                        )
-                      }
-                    }}
-                  />
                   <span style={{ marginRight: '10px' }}>{cellNumber}.</span>
                   <span>{clue}</span>
                 </div>
@@ -533,19 +373,27 @@ const Home: NextPage = () => {
       <br />
       <Row>
         <Col span={10} offset={4}>
-          <Input.TextArea value={exportData} />
+          <Input.TextArea
+            onChange={(e) => {
+              setExportData(e.target.value)
+            }}
+            value={exportData}
+          />
         </Col>
         <Button
           onClick={() => {
-            // copy the export data to clipboard
-            navigator.clipboard.writeText(exportData)
+            const data = JSON.parse(exportData)
+
+            setBoard(data.board)
+            setConnectedWords(data.connectedWords)
+            setExportData('')
           }}
         >
-          Copy
+          Load
         </Button>
       </Row>
     </div>
   )
 }
 
-export default Home
+export default Play
