@@ -1,5 +1,5 @@
 import type { NextPage } from 'next'
-import { Col, Row, Input, Typography, Space, Button } from 'antd'
+import { Col, Row, Input, Typography, Space, Button, Modal, message } from 'antd'
 import { useCallback, useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
 import LZUTF8 from 'lzutf8'
@@ -44,6 +44,7 @@ const Play: NextPage = () => {
   const [currentCell, setCurrentCell] = useState<number[]>([])
   const [dimension, setDimension] = useState<Dimension>(Dimension.Row)
   const [exportData, setExportData] = useState<string>('')
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
 
   useEffect(() => {
     const newBoard = []
@@ -115,7 +116,6 @@ const Play: NextPage = () => {
     const newBoard = [...board]
 
     newBoard[row][col].value = letter
-    console.log({ letter })
 
     setBoard(newBoard)
 
@@ -254,9 +254,27 @@ const Play: NextPage = () => {
     }
   }, [onBackspace])
 
+  useEffect(() => {
+    const exportedData = localStorage.getItem('crossword')
+
+    if (exportedData) {
+      const parsedData = JSON.parse(exportedData)
+
+      setBoard(parsedData.board)
+      setConnectedWords(parsedData.connectedWords)
+    }
+  }, [])
+
   return (
     <div className={styles.container}>
-      <Title>Crossword!</Title>
+      <Row justify="space-between">
+        <Col>
+          <Title>Crossword!</Title>
+        </Col>
+        <Col>
+          <Button onClick={() => setIsModalOpen(true)}>Settings</Button>
+        </Col>
+      </Row>
 
       <Row>
         <Col offset={4}>
@@ -280,9 +298,7 @@ const Play: NextPage = () => {
                         id={`${rowIndex}-${squareIndex}`}
                         value={square.value?.toUpperCase()}
                         onChange={(e) => {
-                          console.log({ a: e.target.value })
                           const letter = e.target.value.slice(-1)
-                          console.log({ b: letter })
 
                           if (!letter.match(/[a-z]/i)) {
                             return
@@ -371,27 +387,55 @@ const Play: NextPage = () => {
         </Col>
       </Row>
       <br />
-      <Row>
-        <Col span={10} offset={4}>
-          <Input.TextArea
-            onChange={(e) => {
-              setExportData(e.target.value)
-            }}
-            value={exportData}
-          />
-        </Col>
-        <Button
-          onClick={() => {
-            const data = JSON.parse(exportData)
-
-            setBoard(data.board)
-            setConnectedWords(data.connectedWords)
-            setExportData('')
+      <Modal
+        open={isModalOpen}
+        title="Settings"
+        okText="Done"
+        onOk={() => setIsModalOpen(false)}
+        onCancel={() => setIsModalOpen(false)}
+        cancelText={false}
+        cancelButtonProps={{
+          style: {
+            display: 'none'
+          }
+        }}
+      >
+        <Input
+          onChange={(e) => {
+            setExportData(e.target.value)
           }}
-        >
-          Load
-        </Button>
-      </Row>
+          value={exportData}
+          placeholder="Paste here"
+        />
+        <br />
+        <br />
+        <Row justify="space-between">
+          <Col>
+            <Button
+              onClick={() => {
+                localStorage.setItem('crossword', exportData)
+                const data = JSON.parse(exportData)
+
+                setBoard(data.board)
+                setConnectedWords(data.connectedWords)
+                setExportData('')
+              }}
+            >
+              Load
+            </Button>
+          </Col>
+          <Col>
+            <Button
+              onClick={() => {
+                localStorage.removeItem('crossword')
+                message.success('Cleared, refresh page')
+              }}
+            >
+              Clear cache
+            </Button>
+          </Col>
+        </Row>
+      </Modal>
     </div>
   )
 }

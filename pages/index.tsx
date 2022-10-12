@@ -1,5 +1,5 @@
 import type { NextPage } from 'next'
-import { Col, Row, Input, InputNumber, Typography, Form, Divider, Space, Checkbox, Button } from 'antd'
+import { Col, Row, Input, InputNumber, Typography, Form, message, Space, Checkbox, Button, Popconfirm } from 'antd'
 import { useCallback, useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
 import LZUTF8 from 'lzutf8'
@@ -45,21 +45,40 @@ const Home: NextPage = () => {
   const [dimension, setDimension] = useState<Dimension>(Dimension.Row)
   const [exportData, setExportData] = useState<string>('')
 
-  useEffect(() => {
-    const newBoard = []
+  const buildBoard = useCallback(
+    (boardData?: any) => {
+      const newBoard = []
 
-    for (let i = 0; i < boardSize; i++) {
-      const row = []
+      for (let i = 0; i < boardSize; i++) {
+        const row = []
 
-      for (let j = 0; j < boardSize; j++) {
-        row.push({ type: SquareType.White, value: '', cellNumber: null, clue: { row: '', column: '' } })
+        for (let j = 0; j < boardSize; j++) {
+          if (boardData && boardData[i] && boardData[i][j]) {
+            row.push(boardData[i][j])
+          } else {
+            row.push({ type: SquareType.White, value: '', cellNumber: null, clue: { row: '', column: '' } })
+          }
+        }
+
+        newBoard.push(row)
       }
 
-      newBoard.push(row)
-    }
+      setBoard(newBoard)
+    },
+    [boardSize]
+  )
 
-    setBoard(newBoard)
-  }, [boardSize])
+  useEffect(() => {
+    const data = localStorage.getItem('crossword-builder')
+
+    if (data) {
+      const { board, connectedWords } = JSON.parse(data)
+      buildBoard(board)
+      setConnectedWords(connectedWords)
+    } else {
+      buildBoard()
+    }
+  }, [boardSize, buildBoard])
 
   const focusSquare = (row: number, col: number) => {
     const nextCol = col + 1
@@ -289,6 +308,19 @@ const Home: NextPage = () => {
     }
   }, [onBackspace])
 
+  useEffect(() => {
+    if (!board.length) {
+      return
+    }
+
+    const data = {
+      board,
+      connectedWords
+    }
+
+    localStorage.setItem('crossword-builder', JSON.stringify(data))
+  }, [board, connectedWords])
+
   return (
     <div className={styles.container}>
       <Title>Crossword Builder</Title>
@@ -386,20 +418,37 @@ const Home: NextPage = () => {
                     value={board[currentCell[0]][currentCell[1]].clue[dimension] || ''}
                   />
                 </Form.Item>
-                <Button
-                  onClick={() => {
-                    // export the board and connected words
-                    // remove letters from the board
-                    setExportData(
-                      JSON.stringify({
-                        board: board,
-                        connectedWords
-                      })
-                    )
-                  }}
-                >
-                  Export
-                </Button>
+                <Space direction="vertical">
+                  <Button
+                    onClick={() => {
+                      // export the board and connected words
+                      // remove letters from the board
+                      setExportData(
+                        JSON.stringify({
+                          board: board,
+                          connectedWords
+                        })
+                      )
+                    }}
+                  >
+                    Export
+                  </Button>
+                  <br />
+                  <Popconfirm
+                    title="Are you sure you want to clear the board?"
+                    onConfirm={() => {
+                      localStorage.removeItem('crossword-builder')
+                      buildBoard()
+                      setConnectedWords([])
+                      setDimension(Dimension.Row)
+                      setCurrentCell([])
+                    }}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Button>Clear board</Button>
+                  </Popconfirm>
+                </Space>
                 {/* <Form.Item label="Connected words">
                   <Input />
                 </Form.Item> */}
@@ -408,6 +457,7 @@ const Home: NextPage = () => {
           </Col>
         )}
 
+        {/* Vertical Clues */}
         <Col offset={1}>
           <Space direction="vertical">
             <Title>Vertical</Title>
@@ -471,6 +521,7 @@ const Home: NextPage = () => {
           </Space>
         </Col>
 
+        {/* Horizontal clues */}
         <Col offset={1}>
           <Space direction="vertical">
             <Title>Horizontal</Title>
@@ -543,6 +594,7 @@ const Home: NextPage = () => {
           onClick={() => {
             // copy the export data to clipboard
             navigator.clipboard.writeText(exportData)
+            message.success('Copied to clipboard')
           }}
         >
           Copy
