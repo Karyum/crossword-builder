@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import { Col, Row, Input, InputNumber, Typography, Form, Divider, Space, Checkbox, Button } from 'antd'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
 import LZUTF8 from 'lzutf8'
 
