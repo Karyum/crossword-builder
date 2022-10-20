@@ -17,6 +17,6 @@
 ## Todo:
 
 - [x] Save imported board to localstorage so players don't lose progress
-- [x] Check if the board is solved
+- [ ] Check if the board is solved
 - [ ] Support smaller screens
 - [ ] Compress or encrypt exported board
