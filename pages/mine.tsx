@@ -343,7 +343,7 @@ const MineSweeper: NextPage = () => {
                             if (rowIdx === rowIndex && squareIdx === squareIndex) {
                               return {
                                 ...square,
-                                flagged: '🚩'
+                                flagged: square.flagged === '🚩' ? '' : '🚩'
                               }
                             }
 
