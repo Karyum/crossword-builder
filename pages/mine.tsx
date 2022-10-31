@@ -348,7 +348,9 @@ const MineSweeper: NextPage = () => {
                     key={squareIndex}
                     className={styles.mineCell}
                     onClick={() => {
-                      clickCell(board, rowIndex, squareIndex)
+                      if (!square.flagged) {
+                        clickCell(board, rowIndex, squareIndex)
+                      }
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault()
