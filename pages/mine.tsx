@@ -83,9 +83,34 @@ const checkForBombs = (row: number, col: number, board: ISquare[][], boardSize: 
   return bombCount
 }
 
+const addBombsToBoard = (board: ISquare[][], boardSize: number, bombCount: number, bombsAdded = 0) => {
+  for (let i = 0; i < boardSize; i++) {
+    const randomRow = Math.floor(Math.random() * boardSize)
+
+    const randomCol = Math.floor(Math.random() * boardSize)
+
+    if (!board[randomRow] || board[randomRow][randomCol].type === SquareType.Bomb || bombsAdded === bombCount) {
+      continue
+    }
+
+    bombsAdded++
+
+    board[randomRow][randomCol].type = SquareType.Bomb
+
+    board[randomRow][randomCol].value = '💣'
+  }
+
+  if (bombsAdded < bombCount) {
+    addBombsToBoard(board, boardSize, bombCount, bombsAdded)
+  }
+
+  return board
+}
+
 const MineSweeper: NextPage = () => {
   const [board, setBoard] = useState<ISquare[][]>([])
   const [boardSize, setBoardSize] = useState<number>(15)
+  const [bombCount, setBombCount] = useState<number>(30)
   const [lastClicked, setLastClicked] = useState<any>([])
   const [bombsAdded, setBombsAdded] = useState<boolean>(false)
 
@@ -127,23 +152,7 @@ const MineSweeper: NextPage = () => {
   const addBombs = () => {
     const newBoard = [...board]
 
-    for (let i = 0; i < boardSize; i++) {
-      const randomRow = Math.floor(Math.random() * boardSize)
-
-      const randomCol = Math.floor(Math.random() * boardSize)
-
-      if (!newBoard[randomRow]) {
-        continue
-      }
-      //   if (newBoard[randomRow][randomCol].type === SquareType.Bomb) {
-      //     i--
-      //     continue
-      //   }
-
-      newBoard[randomRow][randomCol].type = SquareType.Bomb
-
-      newBoard[randomRow][randomCol].value = '💣'
-    }
+    addBombsToBoard(newBoard, boardSize, bombCount)
 
     // add values to the squares with the surrounding bombs
     for (let i = 0; i < boardSize; i++) {
@@ -308,6 +317,12 @@ const MineSweeper: NextPage = () => {
               value={boardSize}
               onChange={(e) => {
                 setBoardSize(Number(e.target.value))
+              }}
+            />
+            <Input
+              value={bombCount}
+              onChange={(e) => {
+                setBombCount(Number(e.target.value))
               }}
             />
             <Button
