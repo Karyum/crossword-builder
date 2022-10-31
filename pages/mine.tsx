@@ -359,7 +359,7 @@ const MineSweeper: NextPage = () => {
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault()
-                      if (flags === bombCount) {
+                      if (flags === 0) {
                         return
                       }
 
