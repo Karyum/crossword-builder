@@ -97,7 +97,7 @@ const addBombsToBoard = (board: ISquare[][], boardSize: number, bombCount: numbe
 
     board[randomRow][randomCol].type = SquareType.Bomb
 
-    board[randomRow][randomCol].value = '🍆'
+    board[randomRow][randomCol].value = '💣'
   }
 
   if (bombsAdded < bombCount) {
@@ -113,6 +113,7 @@ const MineSweeper: NextPage = () => {
   const [bombCount, setBombCount] = useState<number>(30)
   const [lastClicked, setLastClicked] = useState<any>([])
   const [bombsAdded, setBombsAdded] = useState<boolean>(false)
+  const [flags, setFlags] = useState<number>(30)
 
   const buildBoard = () => {
     const newBoard = []
@@ -323,6 +324,7 @@ const MineSweeper: NextPage = () => {
               value={bombCount}
               onChange={(e) => {
                 setBombCount(Number(e.target.value))
+                setFlags(Number(e.target.value))
               }}
             />
             <Button
@@ -334,6 +336,9 @@ const MineSweeper: NextPage = () => {
             >
               Build!
             </Button>
+            <span>
+              Flags: <span style={{ color: 'red' }}>{flags}</span>
+            </span>
           </Space>
         </Col>
       </Row>
@@ -354,10 +359,20 @@ const MineSweeper: NextPage = () => {
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault()
+                      if (flags === bombCount) {
+                        return
+                      }
+
                       setBoard((prevBoard) =>
                         prevBoard.map((row, rowIdx) =>
                           row.map((square, squareIdx) => {
                             if (rowIdx === rowIndex && squareIdx === squareIndex) {
+                              if (square.flagged) {
+                                setFlags((prevFlags) => prevFlags + 1)
+                              } else {
+                                setFlags((prevFlags) => prevFlags - 1)
+                              }
+
                               return {
                                 ...square,
                                 flagged: square.flagged === '🚩' ? '' : '🚩'
@@ -373,14 +388,11 @@ const MineSweeper: NextPage = () => {
                       backgroundColor: square.hidden ? 'grey' : 'lightgrey'
                     }}
                   >
-                    {/* {!square.hidden && square.type === SquareType.Bomb ? (
-                      <img
-                        src="https://media-exp1.licdn.com/dms/image/C4E03AQHqxTmb9A92VQ/profile-displayphoto-shrink_400_400/0/1644157395323?e=1672876800&v=beta&t=uu_PIoEzvPTkefvFBXeEZL3K9Nfq5cUgXTvRUqYBclw"
-                        alt=""
-                      />
-                    ) : ( */}
-                    <span>{!square.hidden ? square.value || ' ' : square.flagged}</span>
-                    {/* )} */}
+                    {!square.hidden && square.type === SquareType.Bomb ? (
+                      <img src="https://www.svgrepo.com/show/193161/molotov-cocktail-cocktail.svg" alt="" />
+                    ) : (
+                      <span>{!square.hidden ? square.value || ' ' : square.flagged}</span>
+                    )}
                   </div>
                 ))}
               </div>
