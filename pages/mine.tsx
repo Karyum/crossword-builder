@@ -1,5 +1,5 @@
 import type { NextPage } from 'next'
-import { Col, Row, Input, Typography, Button, Space } from 'antd'
+import { Col, Row, Input, Typography, Button, Space, message } from 'antd'
 import { useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
 
@@ -14,6 +14,7 @@ interface ISquare {
   type: SquareType
   value: string | null
   hidden: boolean
+  flagged: string
 }
 
 const checkForBombs = (row: number, col: number, board: ISquare[][], boardSize: number) => {
@@ -98,7 +99,8 @@ const MineSweeper: NextPage = () => {
         row.push({
           type: SquareType.Number,
           hidden: true,
-          value: null
+          value: null,
+          flagged: ''
         })
       }
 
@@ -188,8 +190,6 @@ const MineSweeper: NextPage = () => {
       return
     }
 
-    console.log(checkForBombs(row, col, newBoard, boardSize))
-
     if (checkForBombs(row, col, newBoard, boardSize) === 0) {
       // waterfall check the bordering cells
       if (
@@ -273,6 +273,29 @@ const MineSweeper: NextPage = () => {
     }
   }, [board, lastClicked, bombsAdded])
 
+  useEffect(() => {
+    // check win condition
+    if (board.length) {
+      let hiddenCount = 0
+      let bombCount = 0
+
+      for (let i = 0; i < boardSize; i++) {
+        for (let j = 0; j < boardSize; j++) {
+          if (board[i][j].hidden) {
+            hiddenCount++
+          }
+
+          if (board[i][j].type === SquareType.Bomb) {
+            bombCount++
+          }
+        }
+      }
+
+      if (hiddenCount === bombCount) {
+        message.success('You win!')
+      }
+    }
+  }, [board])
   return (
     <div className={styles.container}>
       <Row justify="start" align="middle">
@@ -312,11 +335,28 @@ const MineSweeper: NextPage = () => {
                     onClick={() => {
                       clickCell(board, rowIndex, squareIndex)
                     }}
+                    onContextMenu={(e) => {
+                      e.preventDefault()
+                      setBoard((prevBoard) =>
+                        prevBoard.map((row, rowIdx) =>
+                          row.map((square, squareIdx) => {
+                            if (rowIdx === rowIndex && squareIdx === squareIndex) {
+                              return {
+                                ...square,
+                                flagged: '🚩'
+                              }
+                            }
+
+                            return square
+                          })
+                        )
+                      )
+                    }}
                     style={{
                       backgroundColor: square.hidden ? 'grey' : 'lightgrey'
                     }}
                   >
-                    <span>{!square.hidden && (square.value || ' ')}</span>
+                    <span>{!square.hidden ? square.value || ' ' : square.flagged}</span>
                   </div>
                 ))}
               </div>
