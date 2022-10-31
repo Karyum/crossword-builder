@@ -97,7 +97,7 @@ const addBombsToBoard = (board: ISquare[][], boardSize: number, bombCount: numbe
 
     board[randomRow][randomCol].type = SquareType.Bomb
 
-    board[randomRow][randomCol].value = '💣'
+    board[randomRow][randomCol].value = '🍆'
   }
 
   if (bombsAdded < bombCount) {
@@ -373,14 +373,14 @@ const MineSweeper: NextPage = () => {
                       backgroundColor: square.hidden ? 'grey' : 'lightgrey'
                     }}
                   >
-                    {!square.hidden && square.type === SquareType.Bomb ? (
+                    {/* {!square.hidden && square.type === SquareType.Bomb ? (
                       <img
                         src="https://media-exp1.licdn.com/dms/image/C4E03AQHqxTmb9A92VQ/profile-displayphoto-shrink_400_400/0/1644157395323?e=1672876800&v=beta&t=uu_PIoEzvPTkefvFBXeEZL3K9Nfq5cUgXTvRUqYBclw"
                         alt=""
                       />
-                    ) : (
-                      <span>{!square.hidden ? square.value || ' ' : square.flagged}</span>
-                    )}
+                    ) : ( */}
+                    <span>{!square.hidden ? square.value || ' ' : square.flagged}</span>
+                    {/* )} */}
                   </div>
                 ))}
               </div>
