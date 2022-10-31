@@ -373,7 +373,14 @@ const MineSweeper: NextPage = () => {
                       backgroundColor: square.hidden ? 'grey' : 'lightgrey'
                     }}
                   >
-                    <span>{!square.hidden ? square.value || ' ' : square.flagged}</span>
+                    {!square.hidden && square.type === SquareType.Bomb ? (
+                      <img
+                        src="https://media-exp1.licdn.com/dms/image/C4E03AQHqxTmb9A92VQ/profile-displayphoto-shrink_400_400/0/1644157395323?e=1672876800&v=beta&t=uu_PIoEzvPTkefvFBXeEZL3K9Nfq5cUgXTvRUqYBclw"
+                        alt=""
+                      />
+                    ) : (
+                      <span>{!square.hidden ? square.value || ' ' : square.flagged}</span>
+                    )}
                   </div>
                 ))}
               </div>
