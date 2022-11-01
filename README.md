@@ -14,6 +14,9 @@
   - import and load the exported board
   - solve crossword!
 
+- `/mine` for minesweeper
+  
+
 ## Todo:
 
 - [x] Save imported board to localstorage so players don't lose progress
