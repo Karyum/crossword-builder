@@ -1,5 +1,18 @@
 import type { NextPage } from 'next'
-import { Col, Row, Input, InputNumber, Typography, Form, message, Space, Checkbox, Button, Popconfirm } from 'antd'
+import {
+  Col,
+  Row,
+  Input,
+  InputNumber,
+  Typography,
+  Form,
+  message,
+  Space,
+  Checkbox,
+  Button,
+  Popconfirm,
+  Switch
+} from 'antd'
 import { useCallback, useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
 import LZUTF8 from 'lzutf8'
@@ -44,6 +57,7 @@ const Home: NextPage = () => {
   const [currentCell, setCurrentCell] = useState<number[]>([])
   const [dimension, setDimension] = useState<Dimension>(Dimension.Row)
   const [exportData, setExportData] = useState<string>('')
+  const [mirrorBlackCells, setMirrorBlackCells] = useState<boolean>(true)
 
   const buildBoard = useCallback(
     (boardData?: any) => {
@@ -143,10 +157,19 @@ const Home: NextPage = () => {
   const turnCellBlack = (row: number, col: number) => {
     const newBoard = [...board]
 
+    // also turn the parallel cell black on the grid
     if (newBoard[row][col].type === SquareType.White) {
       newBoard[row][col].type = SquareType.Black
+
+      if (mirrorBlackCells) {
+        newBoard[boardSize - row - 1][boardSize - col - 1].type = SquareType.Black
+      }
     } else {
       newBoard[row][col].type = SquareType.White
+
+      if (mirrorBlackCells) {
+        newBoard[boardSize - row - 1][boardSize - col - 1].type = SquareType.White
+      }
     }
 
     setBoard(newBoard)
@@ -323,6 +346,11 @@ const Home: NextPage = () => {
 
   return (
     <div className={styles.container}>
+      <div>
+        <Form.Item label="Mirror black cells">
+          <Switch checked={mirrorBlackCells} onChange={(checked) => setMirrorBlackCells(checked)} />
+        </Form.Item>
+      </div>
       <Title>Crossword Builder</Title>
       {/* <Row>
         <Col span={6}>
@@ -340,14 +368,13 @@ const Home: NextPage = () => {
       </Row> */}
 
       <Row>
-        <Col offset={4}>
+        <Col>
           <div>
             {board.map((row, rowIndex) => (
               <div key={rowIndex} className={styles.boardRow}>
                 {row.map((square, squareIndex) => (
                   <div key={squareIndex} className={styles.whiteCell}>
                     <span className={styles.cellNumber}>{square.cellNumber}</span>
-
                     {square.type === SquareType.White ? (
                       <Input
                         onClick={() => {
