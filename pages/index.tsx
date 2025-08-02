@@ -15,7 +15,6 @@ import {
 } from 'antd'
 import { useCallback, useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
-import LZUTF8 from 'lzutf8'
 
 const { Title } = Typography
 
@@ -456,6 +455,11 @@ const Home: NextPage = () => {
                           connectedWords
                         })
                       )
+
+                      const copyButton = document.getElementById('copy-button')
+                      if (copyButton) {
+                        copyButton.scrollIntoView({ behavior: 'smooth' })
+                      }
                     }}
                   >
                     Export
@@ -618,6 +622,7 @@ const Home: NextPage = () => {
           <Input.TextArea value={exportData} />
         </Col>
         <Button
+          id="copy-button"
           onClick={() => {
             // copy the export data to clipboard
             navigator.clipboard.writeText(exportData)

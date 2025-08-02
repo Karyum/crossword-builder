@@ -1,5 +1,5 @@
 import type { NextPage } from 'next'
-import { Col, Row, Input, Typography, Button, Space, message } from 'antd'
+import { Col, Row, Input, Typography, Button, Space, message, Form } from 'antd'
 import { useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
 
@@ -100,7 +100,7 @@ const addBombsToBoard = (board: ISquare[][], boardSize: number, bombCount: numbe
     board[randomRow][randomCol].value = '💣'
   }
 
-  if (bombsAdded < bombCount) {
+  if (bombsAdded < bombCount && bombsAdded < boardSize * boardSize) {
     addBombsToBoard(board, boardSize, bombCount, bombsAdded)
   }
 
@@ -314,31 +314,40 @@ const MineSweeper: NextPage = () => {
         </Col>
         <Col offset={1}>
           <Space>
-            <Input
-              value={boardSize}
-              onChange={(e) => {
-                setBoardSize(Number(e.target.value))
-              }}
-            />
-            <Input
-              value={bombCount}
-              onChange={(e) => {
-                setBombCount(Number(e.target.value))
-                setFlags(Number(e.target.value))
-              }}
-            />
-            <Button
-              onClick={() => {
-                setBombsAdded(false)
-                setLastClicked([])
-                buildBoard()
-              }}
-            >
-              Build!
-            </Button>
-            <span>
-              Flags: <span style={{ color: 'red' }}>{flags}</span>
-            </span>
+            <Form.Item label="Board Size">
+              <Input
+                value={boardSize}
+                onChange={(e) => {
+                  setBoardSize(Number(e.target.value))
+                }}
+              />
+            </Form.Item>
+            <Form.Item label="Bomb Count">
+              <Input
+                value={bombCount}
+                onChange={(e) => {
+                  setBombCount(Number(e.target.value))
+                  setFlags(Number(e.target.value))
+                }}
+              />
+            </Form.Item>
+            <Form.Item>
+              <Button
+                onClick={() => {
+                  setBombsAdded(false)
+                  setLastClicked([])
+                  buildBoard()
+                  setFlags(bombCount)
+                }}
+              >
+                Build!
+              </Button>
+            </Form.Item>
+            <Form.Item>
+              <span>
+                Flags: <span style={{ color: 'red' }}>{flags}</span>
+              </span>
+            </Form.Item>
           </Space>
         </Col>
       </Row>
@@ -368,9 +377,9 @@ const MineSweeper: NextPage = () => {
                           row.map((square, squareIdx) => {
                             if (rowIdx === rowIndex && squareIdx === squareIndex) {
                               if (square.flagged) {
-                                setFlags((prevFlags) => prevFlags + 1)
+                                setFlags(flags + 1)
                               } else {
-                                setFlags((prevFlags) => prevFlags - 1)
+                                setFlags(flags - 1)
                               }
 
                               return {

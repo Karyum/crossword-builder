@@ -4,18 +4,19 @@
 
 - Home page for building the crossword contains the following functionality:
 
-  - Double click on sqaure to toggle between black and white cells
+  - Click one to toggle between vertical and horizontal
+  - Double click on square to toggle between black and white cells
   - Cell number and clue for the words
   - connect words together (kind of like nyt crossword) with the checkboxes on the right
-    > currentley you can have one set of connected words
+    > currently you can have one set of connected words
   - export functionality for the board
 
 - `/play`
+
   - import and load the exported board
   - solve crossword!
 
 - `/mine` for minesweeper
-  
 
 ## Todo:
 

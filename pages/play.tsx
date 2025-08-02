@@ -2,7 +2,6 @@ import type { NextPage } from 'next'
 import { Col, Row, Input, Typography, Space, Button, Modal, message } from 'antd'
 import { useCallback, useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
-import LZUTF8 from 'lzutf8'
 
 const { Title } = Typography
 
@@ -277,7 +276,7 @@ const Play: NextPage = () => {
       </Row>
 
       <Row>
-        <Col offset={4}>
+        <Col offset={1}>
           <div>
             {board.map((row, rowIndex) => (
               <div key={rowIndex} className={styles.boardRow}>
